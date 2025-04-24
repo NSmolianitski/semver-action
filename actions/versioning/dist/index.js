@@ -27575,7 +27575,7 @@ function incrementVersion(version, type, branchId) {
 }
 
 function calculateVersion(baseVersion, branchName, bumpType = 'patch') {
-    if (baseVersion === undefined) {
+    if (baseVersion === undefined || baseVersion.trim() === '') {
         baseVersion = '0.0.0';
     }
 
