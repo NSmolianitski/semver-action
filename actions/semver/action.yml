@@ -52,7 +52,8 @@ runs:
       id: generate_notes
       shell: bash
       run: |
-        NOTES=$(git log --pretty=format:"- %s" ${{ steps.get_tag.outputs.last_tag }}..HEAD)
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+        NOTES=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD)
         echo "notes=${NOTES}" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
