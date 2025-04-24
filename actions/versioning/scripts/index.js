@@ -37,10 +37,10 @@ function calculateVersion(baseVersion, branchName, strategy) {
 try {
     const baseVersion = core.getInput('base_version');
     const branchName = core.getInput('branch_name');
-    const bumpType = core.getInput('version_strategy');
+    const strategy = core.getInput('version_strategy');
     const versionPrefix = core.getInput('version_prefix');
 
-    const newVersion = calculateVersion(baseVersion, branchName, bumpType);
+    const newVersion = calculateVersion(baseVersion, branchName, strategy);
 
     core.setOutput('new_version', versionPrefix + newVersion);
 } catch (error) {
