@@ -41,7 +41,7 @@ runs:
 
     - name: Calculate new version
       id: versioning
-      uses: nsmolianitski/semver-versioning-action@v0.0.2
+      uses: nsmolianitski/semver-versioning-action@v0.0.4
       with:
         base_version: ${{ steps.get_tag.outputs.last_tag }}
         version_strategy: ${{ steps.detect_strategy.outputs.strategy }}
