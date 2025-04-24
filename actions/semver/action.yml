@@ -22,12 +22,7 @@ runs:
           echo "strategy=patch" >> $GITHUB_OUTPUT
         else
           echo "strategy=patch" >> $GITHUB_OUTPUT  # По умолчанию
-        fi      
-
-    - name: Checkout repo
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+        fi
 
     - name: Get last tag
       id: get_tag
