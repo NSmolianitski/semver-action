@@ -16,6 +16,6 @@ jobs:
           fetch-depth: 0
 
       - name: Bump version
-        uses: ./actions/semver
+        uses: ./
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
