@@ -18,7 +18,9 @@ function incrementVersion(version, type, branchId) {
 }
 
 function calculateVersion(baseVersion, branchName, strategy) {
-    strategy = strategy || 'patch';
+    if (strategy === undefined || strategy.trim() === '') {
+        strategy = 'patch';
+    }
 
     if (baseVersion === undefined || baseVersion.trim() === '') {
         baseVersion = '0.0.0';
