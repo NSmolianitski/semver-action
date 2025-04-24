@@ -1,23 +1,6 @@
 ﻿const core = require('@actions/core');
 
-function incrementVersion(version, type, branchId) {
-    const [major, minor, patch] = version.split('.');
-    switch (type) {
-        case 'pre':
-            const preVersion = patch.split('.').pop();
-            return `${major}.${minor}.${patch}-${branchId}.pre-${Number(preVersion) + 1}`;
-        case 'patch':
-            return `${major}.${minor}.${Number(patch) + 1}`;
-        case 'minor':
-            return `${major}.${Number(minor) + 1}.0`;
-        case 'major':
-            return `${Number(major) + 1}.0.0`;
-        default:
-            throw new Error(`Unknown version strategy type: ${type}`);
-    }
-}
-
-function calculateVersion(baseVersion, branchName, strategy) {
+function incrementMainVersion(baseVersion, strategy) {
     if (strategy === undefined || strategy.trim() === '') {
         strategy = 'patch';
     }
@@ -26,12 +9,52 @@ function calculateVersion(baseVersion, branchName, strategy) {
         baseVersion = '0.0.0';
     }
 
+    const version = parseMainVersion(baseVersion);
+    const {prefix, major, minor, patch} = version;
+
+    switch (strategy) {
+        case 'patch':
+            return `${prefix}${major}.${minor}.${Number(patch) + 1}`;
+        case 'minor':
+            return `${prefix}${major}.${Number(minor) + 1}.0`;
+        case 'major':
+            return `${prefix}${Number(major) + 1}.0.0`;
+        default:
+            throw new Error(`Unknown version strategy type: ${strategy}`);
+    }
+}
+
+function parseMainVersion(versionString) {
+    const regex = /^([a-zA-Z]*)(\d+)\.(\d+)\.(\d+)$/;
+    const match = versionString.match(regex);
+
+    if (!match)
+        throw new Error("Invalid version format");
+
+    return {
+        prefix: match[1] || '',
+        major: parseInt(match[2], 10),
+        minor: parseInt(match[3], 10),
+        patch: parseInt(match[4], 10),
+    };
+}
+
+function incrementBranchVersion(baseVersion, branchName) {
+    const branchId = branchName.replace('/[^a-z0-9]/gi', '-').toLowerCase();
+
+    let preVersion = baseVersion.split('.').pop();
+    if (isNaN(Number(preVersion)))
+        throw new Error('Old version has invalid format: ' + baseVersion);
+
+    return `${branchId}.${Number(preVersion) + 1}`;
+}
+
+function calculateVersion(baseVersion, branchName, strategy) {
     if (['main', 'master'].includes(branchName)) {
-        return incrementVersion(baseVersion, strategy);
+        return incrementMainVersion(baseVersion, strategy);
     }
 
-    const branchId = branchName.replace('/[^a-z0-9]/gi', '-').toLowerCase();
-    return `${incrementVersion(baseVersion, 'pre', branchId)}`;
+    return `${incrementBranchVersion(baseVersion, branchName)}`;
 }
 
 try {
