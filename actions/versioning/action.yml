@@ -9,7 +9,7 @@ inputs:
     description: 'Base version to increment'
     required: false
   version_strategy:
-    description: 'Version strategy (major, minor, patch). Default is patch'.'
+    description: 'Version strategy (major, minor, patch). Default is patch.'
     required: false
   version_prefix:
     description: 'Version prefix. Default is empty.'
