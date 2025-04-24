@@ -6,6 +6,11 @@ inputs:
     description: 'GitHub token for creating releases'
     required: true
 
+outputs:
+  new_version:
+    value: '${{ steps.versioning.outputs.new_version }}'
+    description: 'New version'
+
 runs:
   using: 'composite'
   steps:
