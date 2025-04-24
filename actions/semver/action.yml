@@ -1,6 +1,11 @@
 ﻿name: 'Semantic Version Bumper'
 description: 'Gets the last tag, bumps version, creates a new tag and release'
 
+inputs:
+  github_token:
+    description: 'GitHub token for creating releases'
+    required: true
+
 runs:
   using: 'composite'
   steps:
@@ -55,7 +60,7 @@ runs:
     - name: Create GitHub Release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
       with:
         tag_name: ${{ steps.versioning.outputs.new_version }}
         release_name: Release ${{ steps.versioning.outputs.new_version }}

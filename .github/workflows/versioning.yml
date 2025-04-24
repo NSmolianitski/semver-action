@@ -17,3 +17,5 @@ jobs:
 
       - name: Bump version
         uses: ./actions/semver
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
