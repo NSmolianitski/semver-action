@@ -11,7 +11,6 @@ inputs:
   version_strategy:
     description: 'Version strategy (major, minor, patch). Default is patch.'
     required: false
-    default: 'patch'
   version_prefix:
     description: 'Version prefix. Default is empty.'
     required: false
