@@ -1,0 +1,15 @@
+﻿name: "Versioning"
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  versioning:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump version
+        uses: ./actions/semver

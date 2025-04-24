@@ -1,0 +1,50 @@
+﻿name: 'Semantic Version Bumper'
+description: 'Gets the last tag, bumps version, and creates a new tag'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Detect version strategy
+      id: detect_strategy
+      shell: bash
+      run: |
+        if [ "${{ github.event_name }}" == "pull_request" ]; then
+          MSG="${{ github.event.pull_request.title }}"
+        else
+          MSG=$(git log -1 --pretty=%B)
+        fi
+
+        if [[ "$MSG" == *"#major"* ]]; then
+          echo "strategy=major" >> $GITHUB_OUTPUT
+        elif [[ "$MSG" == *"#minor"* ]]; then
+          echo "strategy=minor" >> $GITHUB_OUTPUT
+        elif [[ "$MSG" == *"#patch"* ]]; then
+          echo "strategy=patch" >> $GITHUB_OUTPUT
+        else
+          echo "strategy=patch" >> $GITHUB_OUTPUT  # По умолчанию
+        fi      
+
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Get last tag
+      id: get_tag
+      shell: bash
+      run: |
+        TAG=$(git describe --tags --abbrev=0 || echo "0.0.0")
+        echo "last_tag=${TAG}" >> $GITHUB_OUTPUT
+
+    - name: Calculate new version
+      id: versioning
+      uses: ./actions/versioning
+      with:
+        base_version: ${{ steps.get_tag.outputs.last_tag }}
+        version_strategy: ${{ steps.detect_strategy.outputs.strategy }}
+
+    - name: Create new tag
+      shell: bash
+      run: |
+        git tag ${{ steps.versioning.outputs.new_version }}
+        git push origin ${{ steps.versioning.outputs.new_version }}
