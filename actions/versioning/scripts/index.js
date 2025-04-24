@@ -17,13 +17,15 @@ function incrementVersion(version, type, branchId) {
     }
 }
 
-function calculateVersion(baseVersion, branchName, bumpType = 'patch') {
+function calculateVersion(baseVersion, branchName, strategy) {
+    strategy = strategy || 'patch';
+
     if (baseVersion === undefined || baseVersion.trim() === '') {
         baseVersion = '0.0.0';
     }
 
     if (['main', 'master'].includes(branchName)) {
-        return incrementVersion(baseVersion, bumpType);
+        return incrementVersion(baseVersion, strategy);
     }
 
     const branchId = branchName.replace('/[^a-z0-9]/gi', '-').toLowerCase();
@@ -33,7 +35,7 @@ function calculateVersion(baseVersion, branchName, bumpType = 'patch') {
 try {
     const baseVersion = core.getInput('base_version');
     const branchName = core.getInput('branch_name');
-    const bumpType = core.getInput('bump_type');
+    const bumpType = core.getInput('version_strategy');
     const versionPrefix = core.getInput('version_prefix');
 
     const newVersion = calculateVersion(baseVersion, branchName, bumpType);
