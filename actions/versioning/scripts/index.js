@@ -5,7 +5,7 @@ function incrementVersion(version, type, branchId) {
     switch (type) {
         case 'pre':
             const preVersion = patch.split('.').pop();
-            return `${major}.${minor}.${patch}-pre-${branchId}.${Number(preVersion) + 1}`;
+            return `${major}.${minor}.${patch}-${branchId}.pre-${Number(preVersion) + 1}`;
         case 'patch':
             return `${major}.${minor}.${Number(patch) + 1}`;
         case 'minor':
