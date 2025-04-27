@@ -64,18 +64,23 @@ runs:
       if: ${{ !inputs.skip_push }}
       shell: bash
       run: |
+        set -e
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
-        git tag latest -f || echo "Error creating 'latest' tag"
+        echo "Creating tags with version: ${{ steps.versioning.outputs.new_version }}"
+        git tag latest -f
         if [[ "${{ steps.detect_strategy.outputs.strategy }}" == "major" ]]; then
           major_version=$(echo "${{ steps.versioning.outputs.new_version }}" | cut -d'.' -f1)
-          git tag ${major_version} -f || echo "Error creating 'major' tag"
+          echo "Creating major version tag: ${major_version}"
+          git tag ${major_version} -f
         fi
         if [[ "${{ steps.detect_strategy.outputs.strategy }}" == "minor" ]]; then
           minor_version=$(echo "${{ steps.versioning.outputs.new_version }}" | cut -d'.' -f1-2)
-          git tag ${minor_version} -f || echo "Error creating 'minor' tag"
+          echo "Creating minor version tag: ${minor_version}"
+          git tag ${minor_version} -f
         fi
+        echo "Creating full version tag: ${{ steps.versioning.outputs.new_version }}"
         git tag ${{ steps.versioning.outputs.new_version }}
-        git push origin --tags || echo "Error pushing tags"
+        git push origin --tags
       env:
         GITHUB_TOKEN: ${{ env.github_token }}
