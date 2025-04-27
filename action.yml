@@ -53,7 +53,7 @@ runs:
 
     - name: Calculate new version
       id: versioning
-      uses: nsmolianitski/semver-versioning-action@v0.0.7
+      uses: nsmolianitski/semver-versioning-action@v0.0.8
       with:
         latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
         latest_branch_version: ${{ steps.get_tag.outputs.latest_branch_tag }}
