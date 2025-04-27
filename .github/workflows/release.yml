@@ -25,7 +25,7 @@ jobs:
         id: generate_notes
         shell: bash
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+          LAST_TAG=$(git for-each-ref --sort=-version:refname --format '%(refname:short)' refs/tags/v[0-9]*.[0-9]*.[0-9]* | head -n 1)
           NOTES=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD)
           echo "notes=${NOTES}" >> $GITHUB_OUTPUT
 
