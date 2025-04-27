@@ -61,7 +61,7 @@ runs:
         branch_name: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
 
     - name: Create new tag
-      if: ${{ !inputs.skip_push }}
+      if: ${{ inputs.skip_push == false }}
       shell: bash
       run: |
         set -e
@@ -83,4 +83,4 @@ runs:
         git tag ${{ steps.versioning.outputs.new_version }}
         git push origin --tags
       env:
-        GITHUB_TOKEN: ${{ env.github_token }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
