@@ -61,6 +61,7 @@ runs:
         branch_name: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
 
     - name: Create new tag
+      if: ${{ inputs.skip_push != 'true' }}
       shell: bash
       run: |
         set -e
