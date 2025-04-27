@@ -5,7 +5,7 @@ inputs:
   github_token:
     description: 'GitHub token for creating releases'
     required: true
-  disable_push:
+  skip_push:
     description: 'Skips new tag creation and pushing if true. Default is false'
     required: false
     default: false
@@ -14,6 +14,12 @@ outputs:
   new_version:
     value: '${{ steps.versioning.outputs.new_version }}'
     description: 'New version'
+  new_version_raw:
+    description: 'New version without prefix (for branches it is just the last number)'
+    value: '${{ steps.versioning.outputs.new_version_raw }}'
+  prefix:
+    description: 'Prefix'
+    value: '${{ steps.versioning.outputs.prefix }}'
 
 runs:
   using: 'composite'
@@ -40,20 +46,32 @@ runs:
       id: get_tag
       shell: bash
       run: |
-        TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-        echo "last_tag=${TAG}" >> $GITHUB_OUTPUT
+        LATEST_MAIN_TAG=$(git for-each-ref --sort=-version:refname --format '%(refname:short)' refs/tags/v[0-9]*.[0-9]*.[0-9]* | head -n 1)
+        LATEST_BRANCH_TAG=$(git for-each-ref --sort=-version:refname --format '%(refname:short)' refs/tags/v[0-9]*.[0-9]*.[0-9]*-*.[0-9]* | head -n 1)
+        echo "latest_main_tag=${LATEST_MAIN_TAG}" >> $GITHUB_OUTPUT
+        echo "latest_branch_tag=${LATEST_BRANCH_TAG}" >> $GITHUB_OUTPUT
 
     - name: Calculate new version
       id: versioning
       uses: nsmolianitski/semver-versioning-action@v0.0.4
       with:
-        base_version: ${{ steps.get_tag.outputs.last_tag }}
+        latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
+        latest_branch_version: ${{ steps.get_tag.outputs.latest_branch_tag }}
         version_strategy: ${{ steps.detect_strategy.outputs.strategy }}
         branch_name: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
 
     - name: Create new tag
-      if: ${{ !inputs.disable_push }}
+      if: ${{ !inputs.skip_push }}
       shell: bash
       run: |
+        git tag latest -f
+        if [[ "${{ steps.detect_strategy.outputs.strategy }}" == "major" ]]; then
+          major_version=$(echo "${{ steps.versioning.outputs.new_version }}" | cut -d'.' -f1)
+          git tag ${major_version} -f
+        fi
+        if [[ "${{ steps.detect_strategy.outputs.strategy }}" == "minor" ]]; then
+          minor_version=$(echo "${{ steps.versioning.outputs.new_version }}" | cut -d'.' -f1-2)
+          git tag ${minor_version} -f
+        fi
         git tag ${{ steps.versioning.outputs.new_version }}
-        git push origin ${{ steps.versioning.outputs.new_version }}
+        git push origin --tags
