@@ -81,6 +81,6 @@ runs:
         fi
         echo "Creating full version tag: ${{ steps.versioning.outputs.new_version }}"
         git tag ${{ steps.versioning.outputs.new_version }}
-        git push origin --tags
+        git push origin --force --tags
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
