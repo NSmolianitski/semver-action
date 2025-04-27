@@ -21,14 +21,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           
-      - name: Generate release notes
-        id: generate_notes
-        shell: bash
-        run: |
-          LAST_TAG=$(git for-each-ref --sort=-version:refname --format '%(refname:short)' refs/tags/v[0-9]*.[0-9]*.[0-9]* | head -n 1)
-          NOTES=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD)
-          echo "notes=${NOTES}" >> $GITHUB_OUTPUT
-
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
@@ -36,6 +28,6 @@ jobs:
         with:
           tag_name: ${{ steps.versioning.outputs.new_version }}
           release_name: Release ${{ steps.versioning.outputs.new_version }}
-          body: ${{ steps.generate_notes.outputs.notes }}
+          body: ''
           draft: false
           prerelease: ${{ contains(steps.versioning.outputs.new_version, '-') }}
