@@ -20,7 +20,13 @@ jobs:
         uses: ./
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          
+
+      - name: Print version bump results
+        run: |
+          echo ${{ steps.versioning.outputs.new_version }}
+          echo ${{ steps.versioning.outputs.new_version_raw }}
+          echo ${{ steps.versioning.outputs.prefix }}
+
       - name: Create GitHub Release
         uses: actions/create-release@v1
         env:
