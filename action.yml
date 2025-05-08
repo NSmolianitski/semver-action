@@ -104,7 +104,7 @@ runs:
 
     - name: Calculate new version
       id: bump_version
-      uses: nsmolianitski/semver-versioning-action@v0.0.15
+      uses: nsmolianitski/semver-versioning-action@v0.0.16
       with:
         latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
         latest_branch_version: ${{ steps.get_tag.outputs.latest_branch_tag }}
