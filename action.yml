@@ -8,7 +8,16 @@ inputs:
   skip_push:
     description: 'Skips new tag creation and pushing if true. Default is false'
     required: false
+    type: boolean
     default: false
+  additional_name:
+    description: 'Affects the search for tags with this name and is added to the resulting tag. Use if you have multiple services versioned with this action'
+    required: false
+    default: ''
+  mainline_versioning_branches:
+    description: 'List of branches that should use mainline versioning. Defaults are "main" and "master"'
+    required: false
+    default: 'main,master'
 
 outputs:
   new_version:
@@ -42,23 +51,55 @@ runs:
           echo "strategy=patch" >> $GITHUB_OUTPUT
         fi
 
-    - name: Get last tag
+    - name: Get last tag and branch name
       id: get_tag
       shell: bash
       run: |
-        LATEST_MAIN_TAG=$(git for-each-ref --sort=-version:refname --format '%(refname:short)' refs/tags/v[0-9]*.[0-9]*.[0-9]* | head -n 1)
-        LATEST_BRANCH_TAG=$(git for-each-ref --sort=-version:refname --format '%(refname:short)' refs/tags/v[0-9]*.[0-9]*.[0-9]*-*.[0-9]* | head -n 1)
-        echo "latest_main_tag=${LATEST_MAIN_TAG}" >> $GITHUB_OUTPUT
-        echo "latest_branch_tag=${LATEST_BRANCH_TAG}" >> $GITHUB_OUTPUT
+        set -euo pipefail
+        
+        # 1) Получаем дополнительный префикс (может быть пустым)
+        ADDITIONAL_NAME="${{ inputs.additional_name }}"
+        if [[ -n "$ADDITIONAL_NAME" ]]; then
+          NAME_MATCH_PATTERN="${ADDITIONAL_NAME}."
+        else
+          NAME_MATCH_PATTERN=""
+        fi
+        
+        # 2) Собираем все теги вида [PREFIX]vX.Y.Z{-N…}
+        ALL_TAGS=$(
+          git for-each-ref \
+          --sort=-version:refname \
+          --format='%(refname:short)' \
+          "refs/tags/${NAME_MATCH_PATTERN}v[0-9]*\.[0-9]*\.[0-9]*"
+        )
+        
+        # 3) Получаем последний «чистый» тег для main-ветки (без суффикса)
+        LATEST_MAIN_TAG=$(
+          grep -E "^${NAME_MATCH_PATTERN}v[0-9]+\.[0-9]+\.[0-9]+$" <<<"$ALL_TAGS" \
+          | head -n1 || true
+        )
+        
+        # 4) Получаем последний тег для ветки (с суффиксом)
+          LATEST_BRANCH_TAG=$(
+          grep -E "^${NAME_MATCH_PATTERN}v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$" <<<"$ALL_TAGS" \
+          | head -n1 || true
+        )
+        
+        # 5) Пишем в outputs
+        echo "latest_main_tag=$LATEST_MAIN_TAG" >> "$GITHUB_OUTPUT"
+        echo "latest_branch_tag=$LATEST_BRANCH_TAG" >> "$GITHUB_OUTPUT"
+        echo "branch_name=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}" >> "$GITHUB_OUTPUT"
 
     - name: Calculate new version
       id: versioning
-      uses: nsmolianitski/semver-versioning-action@v0.0.8
+      uses: nsmolianitski/semver-versioning-action@v0.0.10
       with:
         latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
         latest_branch_version: ${{ steps.get_tag.outputs.latest_branch_tag }}
         version_strategy: ${{ steps.detect_strategy.outputs.strategy }}
-        branch_name: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}
+        branch_name: ${{ steps.get_tag.outputs.branch_name }}
+        additional_name: ${{ inputs.additional_name }}
+        mainline_versioning_branches: ${{ inputs.mainline_versioning_branches }}
 
     - name: Create new tag
       if: ${{ inputs.skip_push != 'true' }}
