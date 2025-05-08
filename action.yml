@@ -92,7 +92,7 @@ runs:
 
     - name: Calculate new version
       id: versioning
-      uses: nsmolianitski/semver-versioning-action@v0.0.12
+      uses: nsmolianitski/semver-versioning-action@v0.0.14
       with:
         latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
         latest_branch_version: ${{ steps.get_tag.outputs.latest_branch_tag }}
@@ -100,6 +100,25 @@ runs:
         branch_name: ${{ steps.get_tag.outputs.branch_name }}
         additional_name: ${{ inputs.additional_name }}
         mainline_versioning_branches: ${{ inputs.mainline_versioning_branches }}
+
+    - name: Create latest/major/minor tags if needed
+      if: ${{ steps.versioning.outputs.non_main_branch == 'false' && inputs.skip_push == 'false' }}
+      shell: bash
+      run: |
+        echo "Creating latest tag"
+        latest_tag_name="latest"
+        if [ -n "${{ inputs.additional_name }}" ]; then
+          latest_tag_name="${{ inputs.additional_name }}-latest"
+        fi
+        git tag "$latest_tag_name" -f
+
+        echo "Creating major version tag: ${{ steps.versioning.outputs.major }}"
+        git tag ${{ steps.versioning.outputs.major }} -f
+
+        echo "Creating minor version tag: ${{ steps.versioning.outputs.minor }}"
+        git tag ${{ steps.versioning.outputs.minor }} -f
+      env:
+        GITHUB_TOKEN: ${{ inputs.github_token }}
 
     - name: Create new tag
       if: ${{ inputs.skip_push != 'true' }}
@@ -109,21 +128,9 @@ runs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
 
-        echo "Creating tags with version: ${{ steps.versioning.outputs.new_version }}"
-        latest_tag_name="latest"
-        if [ -n "${{ inputs.additional_name }}" ]; then
-          tag_name="${{ inputs.additional_name }}-latest"
-        fi
-        git tag "$latest_tag_name" -f
-
-        echo "Creating major version tag: ${{ steps.versioning.outputs.major }}"
-        git tag ${{ steps.versioning.outputs.major }} -f
-
-        echo "Creating minor version tag: ${{ steps.versioning.outputs.minor }}"
-        git tag ${{ steps.versioning.outputs.minor }} -f
-
         echo "Creating full version tag: ${{ steps.versioning.outputs.new_version }}"
         git tag ${{ steps.versioning.outputs.new_version }}
+        
         git push origin --force --tags
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
