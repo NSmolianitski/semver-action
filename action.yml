@@ -113,7 +113,7 @@ runs:
         additional_name: ${{ inputs.additional_name }}
         mainline_versioning_branches: ${{ inputs.mainline_versioning_branches }}
 
-    - name: Print versioning results
+    - name: Print version bump results
       shell: bash
       run: |
         echo "New version: ${{ steps.bump_version.outputs.new_version }}"
@@ -125,7 +125,7 @@ runs:
         echo "Patch version: ${{ steps.bump_version.outputs.patch }}"
 
     - name: Create latest/major/minor tags if needed
-      if: ${{ steps.versioning.outputs.non_main_branch == 'false' && inputs.skip_push == 'false' }}
+      if: ${{ steps.bump_version.outputs.non_main_branch == 'false' && inputs.skip_push == 'false' }}
       shell: bash
       run: |
         echo "Creating latest tag"
@@ -135,11 +135,11 @@ runs:
         fi
         git tag "$latest_tag_name" -f
 
-        echo "Creating major version tag: ${{ steps.versioning.outputs.major }}"
-        git tag ${{ steps.versioning.outputs.major }} -f
+        echo "Creating major version tag: ${{ steps.bump_version.outputs.major }}"
+        git tag ${{ steps.bump_version.outputs.major }} -f
 
-        echo "Creating minor version tag: ${{ steps.versioning.outputs.minor }}"
-        git tag ${{ steps.versioning.outputs.minor }} -f
+        echo "Creating minor version tag: ${{ steps.bump_version.outputs.minor }}"
+        git tag ${{ steps.bump_version.outputs.minor }} -f
       env:
         GITHUB_TOKEN: ${{ inputs.github_token }}
 
@@ -151,8 +151,8 @@ runs:
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
 
-        echo "Creating full version tag: ${{ steps.versioning.outputs.new_version }}"
-        git tag ${{ steps.versioning.outputs.new_version }}
+        echo "Creating full version tag: ${{ steps.bump_version.outputs.new_version }}"
+        git tag ${{ steps.bump_version.outputs.new_version }}
         
         git push origin --force --tags
       env:
