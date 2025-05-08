@@ -101,6 +101,17 @@ runs:
         additional_name: ${{ inputs.additional_name }}
         mainline_versioning_branches: ${{ inputs.mainline_versioning_branches }}
 
+    - name: Print versioning results
+      shell: bash
+      run: |
+        echo "New version: ${{ steps.versioning.outputs.new_version }}"
+        echo "New version raw: ${{ steps.versioning.outputs.new_version_raw }}"
+        echo "Prefix: ${{ steps.versioning.outputs.prefix }}"
+        echo "Non main branch: ${{ steps.versioning.outputs.non_main_branch }}"
+        echo "Major version: ${{ steps.versioning.outputs.major }}"
+        echo "Minor version: ${{ steps.versioning.outputs.minor }}"
+        echo "Patch version: ${{ steps.versioning.outputs.patch }}"
+
     - name: Create latest/major/minor tags if needed
       if: ${{ steps.versioning.outputs.non_main_branch == 'false' && inputs.skip_push == 'false' }}
       shell: bash
