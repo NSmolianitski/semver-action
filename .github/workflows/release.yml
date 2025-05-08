@@ -26,6 +26,10 @@ jobs:
           echo ${{ steps.versioning.outputs.new_version }}
           echo ${{ steps.versioning.outputs.new_version_raw }}
           echo ${{ steps.versioning.outputs.prefix }}
+          echo ${{ steps.versioning.outputs.non_main_branch }}
+          echo ${{ steps.versioning.outputs.major }}
+          echo ${{ steps.versioning.outputs.minor }}
+          echo ${{ steps.versioning.outputs.patch }}
 
       - name: Create GitHub Release
         uses: actions/create-release@v1

@@ -21,26 +21,26 @@ inputs:
 
 outputs:
   new_version:
-    value: '${{ steps.versioning.outputs.new_version }}'
     description: 'New version'
+    value: '${{ steps.bump_version.outputs.new_version }}'
   new_version_raw:
     description: 'New version without prefix (for branches it is just the last number)'
-    value: '${{ steps.versioning.outputs.new_version_raw }}'
+    value: '${{ steps.bump_version.outputs.new_version_raw }}'
   prefix:
     description: 'Prefix'
-    value: '${{ steps.versioning.outputs.prefix }}'
+    value: '${{ steps.bump_version.outputs.prefix }}'
   non_main_branch:
     description: 'Non main branch'
-    value: '${{ steps.versioning.outputs.non_main_branch }}'
+    value: '${{ steps.bump_version.outputs.non_main_branch }}'
   major:
     description: 'Major version with prefix and additional name (if specified)'
-    value: '${{ steps.versioning.outputs.major }}'
+    value: '${{ steps.bump_version.outputs.major }}'
   minor:
     description: 'Minor version with prefix and additional name (if specified)'
-    value: '${{ steps.versioning.outputs.minor }}'
+    value: '${{ steps.bump_version.outputs.minor }}'
   patch:
     description: 'Same as new_version'
-    value: '${{ steps.versioning.outputs.patch }}'
+    value: '${{ steps.bump_version.outputs.patch }}'
 
 runs:
   using: 'composite'
@@ -103,7 +103,7 @@ runs:
         echo "branch_name=${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.ref_name }}" >> "$GITHUB_OUTPUT"
 
     - name: Calculate new version
-      id: versioning
+      id: bump_version
       uses: nsmolianitski/semver-versioning-action@v0.0.15
       with:
         latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
@@ -116,13 +116,13 @@ runs:
     - name: Print versioning results
       shell: bash
       run: |
-        echo "New version: ${{ steps.versioning.outputs.new_version }}"
-        echo "New version raw: ${{ steps.versioning.outputs.new_version_raw }}"
-        echo "Prefix: ${{ steps.versioning.outputs.prefix }}"
-        echo "Non main branch: ${{ steps.versioning.outputs.non_main_branch }}"
-        echo "Major version: ${{ steps.versioning.outputs.major }}"
-        echo "Minor version: ${{ steps.versioning.outputs.minor }}"
-        echo "Patch version: ${{ steps.versioning.outputs.patch }}"
+        echo "New version: ${{ steps.bump_version.outputs.new_version }}"
+        echo "New version raw: ${{ steps.bump_version.outputs.new_version_raw }}"
+        echo "Prefix: ${{ steps.bump_version.outputs.prefix }}"
+        echo "Non main branch: ${{ steps.bump_version.outputs.non_main_branch }}"
+        echo "Major version: ${{ steps.bump_version.outputs.major }}"
+        echo "Minor version: ${{ steps.bump_version.outputs.minor }}"
+        echo "Patch version: ${{ steps.bump_version.outputs.patch }}"
 
     - name: Create latest/major/minor tags if needed
       if: ${{ steps.versioning.outputs.non_main_branch == 'false' && inputs.skip_push == 'false' }}
