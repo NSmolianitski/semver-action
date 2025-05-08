@@ -29,6 +29,18 @@ outputs:
   prefix:
     description: 'Prefix'
     value: '${{ steps.versioning.outputs.prefix }}'
+  non_main_branch:
+    description: 'Non main branch'
+    value: '${{ steps.versioning.outputs.non_main_branch }}'
+  major:
+    description: 'Major version with prefix and additional name (if specified)'
+    value: '${{ steps.versioning.outputs.major }}'
+  minor:
+    description: 'Minor version with prefix and additional name (if specified)'
+    value: '${{ steps.versioning.outputs.minor }}'
+  patch:
+    description: 'Same as new_version'
+    value: '${{ steps.versioning.outputs.patch }}'
 
 runs:
   using: 'composite'
@@ -92,7 +104,7 @@ runs:
 
     - name: Calculate new version
       id: versioning
-      uses: nsmolianitski/semver-versioning-action@v0.0.14
+      uses: nsmolianitski/semver-versioning-action@v0.0.15
       with:
         latest_main_version: ${{ steps.get_tag.outputs.latest_main_tag }}
         latest_branch_version: ${{ steps.get_tag.outputs.latest_branch_tag }}
