@@ -131,7 +131,7 @@ runs:
         echo "Creating latest tag"
         latest_tag_name="latest"
         if [ -n "${{ inputs.additional_name }}" ]; then
-          latest_tag_name="${{ inputs.additional_name }}-latest"
+          latest_tag_name="${{ inputs.additional_name }}.latest"
         fi
         git tag "$latest_tag_name" -f
 
